@@ -6,6 +6,7 @@ import cors from "cors";
 import "reflect-metadata";
 import logger from "./src/lib/logger";
 import { requestLogger } from "./src/middlewares/requestLogger";
+import { myDataSource } from "./src/config/db.config";
 
 dotenv.config();
 
@@ -36,6 +37,11 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 if (process.env.NODE_ENV === 'production') {
   app.use(helmet())
 }
+
+// establish database connection
+myDataSource.initialize().catch((err) => {
+  logger.error('Database connection error: ', err)
+})
 
 app.listen(port, () => {
   console.info(`Server is up and running at port: ${port}.`);
