@@ -7,8 +7,23 @@ import "reflect-metadata";
 import logger from "./src/lib/logger";
 import { requestLogger } from "./src/middlewares/requestLogger";
 import { myDataSource } from "./src/config/db.config";
+import {
+  checkJwt,
+  decodeJwt,
+  routesExcludedFromJwtAuthentication,
+} from "./src/middlewares/authenticate";
 
 dotenv.config();
+
+const unless = (path: string[], middleware: any) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (path.includes(req.path)) {
+      return next();
+    } else {
+      return middleware(req, res, next);
+    }
+  };
+};
 
 // Middleware to log unhandled exceptions
 process.on('uncaughtException', (ex) => {
@@ -25,6 +40,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(requestLogger);
 
+app.use(unless(routesExcludedFromJwtAuthentication, checkJwt), decodeJwt);
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   logger.error({ message: err.message, code: err.name, name: err.stack });
