@@ -1,0 +1,23 @@
+name: CI / CD for bank-api server
+on:
+  push:
+    branches: 
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-push-artifact:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v3"
+
+      - name: Install Dependencies
+        run: |
+          cd bank-api
+          npm install
+      
+      - name: Build Project
+        run: |
+          cd bank-api
+          npm run build

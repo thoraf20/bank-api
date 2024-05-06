@@ -12,7 +12,7 @@ dotenv.config();
 
 // Middleware to log unhandled exceptions
 process.on('uncaughtException', (ex) => {
-  console.error(`Uncaught exception: ${ex.message}`, ex);
+  logger.error(`Uncaught exception: ${ex.message}`, ex);
   process.exit(1); // Exit the process (optional)
 });
 
@@ -27,7 +27,7 @@ app.use(requestLogger);
 
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  console.error({ message: err.message, code: err.name, name: err.stack });
+  logger.error({ message: err.message, code: err.name, name: err.stack });
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   return res.status(err.status).json({ message: err.message, code: err.code });
@@ -44,7 +44,7 @@ myDataSource.initialize().catch((err) => {
 })
 
 app.listen(port, () => {
-  console.info(`Server is up and running at port: ${port}.`);
+  logger.info(`Server is up and running at port: ${port}.`);
 });
 
 export default app;
