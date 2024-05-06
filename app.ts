@@ -4,6 +4,8 @@ import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import cors from "cors";
 import "reflect-metadata";
+import logger from "./src/lib/logger";
+import { requestLogger } from "./src/middlewares/requestLogger";
 
 dotenv.config();
 
@@ -20,6 +22,8 @@ app.use(cors());
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(requestLogger);
+
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error({ message: err.message, code: err.name, name: err.stack });
