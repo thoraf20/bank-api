@@ -20,4 +20,4 @@ export const decodeJwt = (req: Request, res: Response, next: NextFunction) => {
   next()
 }
 
-export const routesExcludedFromJwtAuthentication = []
+export const routesExcludedFromJwtAuthentication = ['/v1/register']
