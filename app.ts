@@ -41,7 +41,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(requestLogger);
 
-// app.use(unless(routesExcludedFromJwtAuthentication, checkJwt), decodeJwt);
+app.use(unless(routesExcludedFromJwtAuthentication, checkJwt), decodeJwt);
 app.use("/v1", v1Router);
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {

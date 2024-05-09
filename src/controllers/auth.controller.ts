@@ -85,7 +85,11 @@ export const forgotPasswordHandler: RequestHandler = async(req, res, next) => {
     return next(new APIError({ status: httpStatus.BAD_REQUEST, message: error.message }));
   }
 
-  await UserService.checkUserExist(value.email, next);
+  const dbUser = await UserService.getUserByEmail(value.email);
+
+  if (!dbUser) {
+    return next(new APIError({ status: httpStatus.NOT_FOUND, message: 'user not found' }));
+  }  
 
   return res.status(httpStatus.CREATED).json({
     status: "success",
@@ -99,7 +103,11 @@ export const resetPasswordHandler: RequestHandler = async(req, res, next) => {
     return next(new APIError({ status: httpStatus.BAD_REQUEST, message: error.message }));
   }
 
-  await UserService.checkUserExist(value.email, next);
+  const dbUser = await UserService.getUserByEmail(value.email);
+
+  if (!dbUser) {
+    return next(new APIError({ status: httpStatus.NOT_FOUND, message: 'user not found' }));
+  }
 
   if (value.code !== '1234') {
     return next(new APIError({
@@ -110,14 +118,18 @@ export const resetPasswordHandler: RequestHandler = async(req, res, next) => {
     );
   }
 
-  const passwordHash = hashPassword(value.newPassword);
+  try {
+    const passwordHash = hashPassword(value.newPassword);
 
-  await User.update({ email: value.email }, { password: passwordHash })
+    await User.update({ email: value.email }, { password: passwordHash });
 
-  return res.status(httpStatus.CREATED).json({
-    status: "success",
-    message: `password reset successful.`,
-  });
+    return res.status(httpStatus.CREATED).json({
+      status: "success",
+      message: `password reset successful.`,
+    });
+  } catch (error) {
+    return next(new APIError({ status: httpStatus.INTERNAL_SERVER_ERROR, message: 'an error occurred' }));
+  }
 }
 
 export const loginHandler: RequestHandler = async(req, res, next) => {
@@ -127,23 +139,25 @@ export const loginHandler: RequestHandler = async(req, res, next) => {
     return next(new APIError({ status: httpStatus.BAD_REQUEST, message: error.message }));
   }
 
-  const dbUser = await UserService.checkUserExist(value.email, next);
+  const dbUser = await UserService.getUserByEmail(value.email);
 
-  const passwordMatch = comparePassword(value.password, dbUser.password);
-
-  if (!passwordMatch) {
-    return next(new APIError({ status: httpStatus.BAD_REQUEST, message: 'invalid login credentials' }));
+  if (!dbUser || !comparePassword(value.password, dbUser?.password)) {
+    return next(new APIError({ status: httpStatus.BAD_REQUEST, message: 'invalid credentials' }));
   }
 
-  const payload = {
-    id: dbUser.id,
-    email: dbUser.email,
-  };
+  try {
+     const payload = {
+       id: dbUser.id,
+       email: dbUser.email,
+     };
 
-  const token = generateAccessToken(payload);
+     const token = generateAccessToken(payload);
 
-  return res.status(httpStatus.OK).json({
-    message: 'login successful',
-    accessToken: token,
-  });
+     return res.status(httpStatus.OK).json({
+       message: "login successful",
+       accessToken: token,
+     });
+  } catch (error) {
+      return next(new APIError({ status: httpStatus.INTERNAL_SERVER_ERROR, message: 'an error occurred' }));
+  }
 }

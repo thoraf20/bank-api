@@ -1,6 +1,7 @@
 import { StatusCodes } from "http-status-codes";
 import * as jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import { JWTPayload } from "../types";
 
 export const emailPattern =
   /^[-!#$%&'*+\/0-9=?A-Z^_a-z{|}~](\.?[-!#$%&'*+\/0-9=?A-Z^_a-z`{|}~])*@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+$/;
@@ -34,4 +35,10 @@ export const hashPassword = (password: string): string => {
 
 export const comparePassword = (password: string, hash: string): boolean => {
   return bcrypt.compareSync(password, hash);
+};
+
+export const generateAccessToken = (input: JWTPayload): string => {
+  return jwt.sign({ ...input }, `${process.env.JWT_SECRET}`, {
+    expiresIn: `${process.env.JWT_SECRET_EXPIRATION}`,
+  });
 };
